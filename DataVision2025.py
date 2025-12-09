@@ -49,50 +49,23 @@ st.sidebar.markdown("---")
 # File upload
 uploaded_file = st.sidebar.file_uploader("Upload Dataset", type="csv", help="Upload city_day.csv")
 
-# Interactive filters
-st.sidebar.subheader("Filters")
-city_filter = st.sidebar.multiselect("Select Cities", options=[], default=[])
-
-from datetime import date
-start_default = date(2015, 1, 1)
-end_default = date.today()
-
-date_range = st.sidebar.date_input(
-    "Date Range",
-    value=(start_default, end_default)
-)
-
-
-# ML controls
-st.sidebar.subheader("ML Controls")
-model_type = st.sidebar.selectbox("Model Type", ["Random Forest", "Gradient Boosting", "Ensemble"])
-n_folds = st.sidebar.slider("CV Folds", 3, 10, 5)
-forecast_days = st.sidebar.slider("Forecast Days", 7, 30, 14)
-
-# Real-time controls
-st.sidebar.subheader("Real-time Controls")
-auto_refresh = st.sidebar.checkbox("Auto-refresh every 30s")
-prediction_mode = st.sidebar.radio("Prediction Mode", ["Single City", "All Cities", "Custom Scenario"])
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("Status: Ready for Analysis")
-
-# Data processing pipeline
+# Data processing pipeline (FIXED deprecation warnings)
 @st.cache_data
 def process_data(file):
     """Comprehensive data processing with 50+ engineered features"""
     df = pd.read_csv(file)
     
     # Data cleaning and validation
-    df['Date'] = pd.to_datetime(df['Date'])
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df = df.dropna(subset=['Date'])
     df = df.dropna(subset=['Date', 'City', 'AQI']).sort_values(['City', 'Date']).reset_index(drop=True)
     
-    # Numeric conversion for pollutants
+    # Numeric conversion for pollutants (FIXED: Modern Pandas syntax)
     num_cols = ['PM2.5', 'PM10', 'NO2', 'SO2', 'CO', 'O3', 'AQI']
     for col in num_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
-            df[col] = df[col].fillna(method='ffill').fillna(method='bfill')
+            df[col] = df[col].ffill().bfill()  # ✅ FIXED: No more deprecation warnings
     
     # Advanced feature engineering
     df['Month'] = df['Date'].dt.month
@@ -131,6 +104,24 @@ def process_data(file):
     
     return df
 
+# Interactive filters (MOVED after data load)
+city_filter = []
+date_range = []
+
+# ML controls
+st.sidebar.subheader("ML Controls")
+model_type = st.sidebar.selectbox("Model Type", ["Random Forest", "Gradient Boosting", "Ensemble"])
+n_folds = st.sidebar.slider("CV Folds", 3, 10, 5)
+forecast_days = st.sidebar.slider("Forecast Days", 7, 30, 14)
+
+# Real-time controls
+st.sidebar.subheader("Real-time Controls")
+auto_refresh = st.sidebar.checkbox("Auto-refresh every 30s")
+prediction_mode = st.sidebar.radio("Prediction Mode", ["Single City", "All Cities", "Custom Scenario"])
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("Status: Ready for Analysis")
+
 # Main application logic
 if uploaded_file is None:
     st.error("Please upload city_day.csv from the sidebar")
@@ -142,6 +133,14 @@ with st.spinner("Processing dataset with advanced feature engineering..."):
     df = process_data(uploaded_file)
 
 st.success(f"Dataset loaded: {len(df):,} records | {df['City'].nunique()} cities | {len(df.columns)-3} features engineered")
+
+# ✅ FIXED: Populate city filter AFTER data loads
+city_filter = st.sidebar.multiselect("Select Cities", options=df['City'].unique(), default=df['City'].unique()[:3])
+
+from datetime import date
+start_default = date(2015, 1, 1)
+end_default = date.today()
+date_range = st.sidebar.date_input("Date Range", value=(start_default, end_default))
 
 # Apply interactive filters
 df_filtered = df.copy()
@@ -338,7 +337,7 @@ with tab3:
     dates = pd.date_range(start=df['Date'].max(), periods=forecast_days+1, freq='D')
     fig_forecast = go.Figure()
     fig_forecast.add_trace(go.Scatter(x=dates, y=[df['AQI'].mean()]*len(dates), 
-                                    mode='lines', name='Baseline Forecast'))
+                                     mode='lines', name='Baseline Forecast'))
     fig_forecast.update_layout(title="AQI Forecast Next 30 Days", height=500)
     st.plotly_chart(fig_forecast, use_container_width=True)
 
