@@ -52,7 +52,16 @@ uploaded_file = st.sidebar.file_uploader("Upload Dataset", type="csv", help="Upl
 # Interactive filters
 st.sidebar.subheader("Filters")
 city_filter = st.sidebar.multiselect("Select Cities", options=[], default=[])
-date_range = st.sidebar.date_input("Date Range", value=(None, None))
+
+from datetime import date
+start_default = date(2015, 1, 1)
+end_default = date.today()
+
+date_range = st.sidebar.date_input(
+    "Date Range",
+    value=(start_default, end_default)
+)
+
 
 # ML controls
 st.sidebar.subheader("ML Controls")
