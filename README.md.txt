@@ -2,7 +2,7 @@
 
 This project analyzes air quality data from major Indian cities and builds a machine learning model to predict the Air Quality Index (AQI). The project combines data analysis, visualization, and machine learning to understand pollution patterns and provide AQI predictions through a web application.
 
-Deployment Link  
+Deployment Link:  
 https://datavision-2025-airquality-jorutpyl2r8ptkyc3glyjq.streamlit.app/
 
 ## Project Overview
@@ -13,11 +13,11 @@ The project also includes an interactive web application where users can explore
 
 ## Objectives
 
-Analyze air quality trends across multiple cities.  
-Identify dominant pollutants affecting AQI.  
-Study seasonal variations in air pollution.  
-Develop a machine learning model to predict AQI values.  
-Deploy the model through a web-based interface.
+- Analyze air quality trends across multiple cities  
+- Identify dominant pollutants affecting AQI  
+- Study seasonal variations in air pollution  
+- Develop a machine learning model to predict AQI values  
+- Deploy the model through a web-based interface  
 
 ## Key Findings
 
@@ -31,13 +31,13 @@ A Random Forest regression model achieved the best performance with an R² score
 
 ## Technologies Used
 
-Python  
-Pandas  
-NumPy  
-Scikit-learn  
-Matplotlib  
-Seaborn  
-Streamlit
+- Python  
+- Pandas  
+- NumPy  
+- Scikit-learn  
+- Matplotlib  
+- Seaborn  
+- Streamlit  
 
 ## Machine Learning Model
 
